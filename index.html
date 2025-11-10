@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Focus Buddy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.5s ease;
+        }
+        /* 커스텀 모달 스타일 */
+        .modal {
+            display: none; /* 기본적으로 숨김 */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            animation: slide-in 0.3s ease-out;
+        }
+        @keyframes slide-in {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .timer-display {
+            font-size: 5rem; /* 80px, 90분 단위를 위해 약간 줄임 */
+            line-height: 1;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        /* 활성화된 버튼 스타일 */
+        .btn-active {
+            background-color: #3b82f6 !important; /* blue-600 */
+            color: white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 md:p-8">
+        
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-blue-600">Study Focus Buddy</h1>
+            <p class="text-gray-500 mt-1">AI 기반 자기주도학습 연구</p>
+        </header>
+
+        <main>
+            <!-- 1. 학습 기법 선택 (포모도로 / 울트라디안) -->
+            <section class="mb-4">
+                <h2 class="text-xl font-semibold mb-3 text-center">학습 리듬 선택</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="pomodoro-btn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg transition duration-200">
+                        포모도로
+                        <span class="block text-xs">(25분 집중 / 5분 휴식)</span>
+                    </button>
+                    <button id="ultradian-btn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg transition duration-200">
+                        울트라디안
+                        <span class="block text-xs">(90분 집중 / 20분 휴식)</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 2. 타이머 -->
+            <section class="mb-6">
+                <div id="timer" class="text-center text-gray-900 bg-gray-100 rounded-lg p-6 mb-4">
+                    <div id="timer-display" class="timer-display">25:00</div>
+                    <p id="timer-mode" class="text-lg font-medium text-blue-600">집중 시간</p>
+                </div>
+                <div class="flex justify-center gap-3">
+                    <button id="start-btn" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
+                        시작
+                    </button>
+                    <button id="reset-btn" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded-lg transition duration-200">
+                        리셋
+                    </button>
+                </div>
+            </section>
+
+            <!-- 3. 학습 보조 도구 -->
+            <section class="grid grid-cols-3 gap-3">
+                <div class="bg-yellow-100 text-yellow-800 p-3 rounded-lg text-center">
+                    <h3 class="font-semibold mb-2 text-sm">스트레칭</h3>
+                    <button id="stretch-btn" class="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 px-3 rounded-lg text-xs transition duration-200">
+                        가이드
+                    </button>
+                </div>
+                <div class="bg-purple-100 text-purple-800 p-3 rounded-lg text-center">
+                    <h3 class="font-semibold mb-2 text-sm">백색소음</h3>
+                    <button id="noise-btn" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-3 rounded-lg text-xs transition duration-200">
+                        PLAY
+                    </button>
+                </div>
+                <div class="bg-green-100 text-green-800 p-3 rounded-lg text-center">
+                    <h3 class="font-semibold mb-2 text-sm">동기 부여</h3>
+                    <button id="motivation-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-lg text-xs transition duration-200">
+                        명언
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 모달 (Modal) -->
+    <div id="modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span id="modal-close" class="modal-close">&times;</span>
+            <h3 id="modal-title" class="text-2xl font-bold mb-4">모달 제목</h3>
+            <div id="modal-body" class="text-lg">
+                <p>모달 내용이 여기에 들어갑니다.</p>
+            </div>
+            <button id="modal-ok-btn" class="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                확인
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- 오디오 컨텍스트 (백색소음용) ---
+        let audioContext = null;
+        let noiseSource = null;
+        let isNoisePlaying = false;
+        const noiseBtn = document.getElementById('noise-btn');
+
+        // 백색소음 생성 함수
+        function createWhiteNoiseNode(context) {
+            const bufferSize = 2 * context.sampleRate; // 2초 버퍼
+            const noiseBuffer = context.createBuffer(1, bufferSize, context.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1; // -1 to 1
+            }
+
+            const bufferSource = context.createBufferSource();
+            bufferSource.buffer = noiseBuffer;
+            bufferSource.loop = true;
+            
+            const gainNode = context.createGain();
+            gainNode.gain.setValueAtTime(0.05, context.currentTime); // 소리 크기 조절 (너무 크지 않게)
+            
+            bufferSource.connect(gainNode);
+            gainNode.connect(context.destination);
+            
+            return bufferSource;
+        }
+
+        // 백색소음 토글
+        noiseBtn.addEventListener('click', () => {
+            if (!isNoisePlaying) {
+                if (audioContext === null) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                noiseSource = createWhiteNoiseNode(audioContext);
+                noiseSource.start();
+                isNoisePlaying = true;
+                noiseBtn.textContent = 'STOP';
+                noiseBtn.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+                noiseBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+            } else {
+                if (noiseSource) {
+                    noiseSource.stop();
+                    noiseSource = null;
+                }
+                isNoisePlaying = false;
+                noiseBtn.textContent = 'PLAY';
+                noiseBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                noiseBtn.classList.add('bg-purple-500', 'hover:bg-purple-600');
+            }
+        });
+
+
+        // --- 모달 로직 ---
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalClose = document.getElementById('modal-close');
+        const modalOkBtn = document.getElementById('modal-ok-btn');
+
+        function showModal(title, bodyHtml) {
+            modalTitle.textContent = title;
+            modalBody.innerHTML = bodyHtml;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        modalClose.onclick = closeModal;
+        modalOkBtn.onclick = closeModal;
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // --- 타이머 로직 ---
+        const timerDisplay = document.getElementById('timer-display');
+        const timerModeDisplay = document.getElementById('timer-mode');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const pomodoroBtn = document.getElementById('pomodoro-btn');
+        const ultradianBtn = document.getElementById('ultradian-btn');
+
+        const times = {
+            pomodoro: { study: 25 * 60, break: 5 * 60 },
+            ultradian: { study: 90 * 60, break: 20 * 60 }
+        };
+
+        let currentTechnique = 'pomodoro'; // 기본값
+        let isRunning = false;
+        let isStudyMode = true;
+        let timeLeft = times.pomodoro.study;
+        let timerInterval = null;
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function setTechnique(technique) {
+            clearInterval(timerInterval);
+            isRunning = false;
+
+            currentTechnique = technique;
+            isStudyMode = true;
+            timeLeft = times[technique].study;
+            
+            updateTimerDisplay();
+            timerModeDisplay.textContent = '집중 시간';
+            document.body.style.backgroundColor = '#f9fafb';
+            resetStartBtn();
+
+            // 버튼 활성화 스타일
+            if (technique === 'pomodoro') {
+                pomodoroBtn.classList.add('btn-active');
+                ultradianBtn.classList.remove('btn-active');
+            } else {
+                ultradianBtn.classList.add('btn-active');
+                pomodoroBtn.classList.remove('btn-active');
+            }
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            startBtn.textContent = '일시정지';
+            startBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+            startBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    isRunning = false;
+                    
+                    const modeText = isStudyMode ? '휴식' : '집중';
+                    const title = isStudyMode ? '휴식 시간!' : '집중 시간!';
+                    const body = isStudyMode ? 
+                        `수고하셨습니다! ${times[currentTechnique].break / 60}분간 휴식을 시작합니다.` : 
+                        `휴식 끝! ${times[currentTechnique].study / 60}분간 집중해봅시다.`;
+
+                    showModal(title, body);
+                    switchMode();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            if (!isRunning) return;
+            isRunning = false;
+            clearInterval(timerInterval);
+            resetStartBtn();
+            startBtn.textContent = '계속';
+        }
+
+        function switchMode() {
+            isStudyMode = !isStudyMode;
+            timeLeft = isStudyMode ? times[currentTechnique].study : times[currentTechnique].break;
+            timerModeDisplay.textContent = isStudyMode ? '집중 시간' : '휴식 시간';
+            document.body.style.backgroundColor = isStudyMode ? '#f9fafb' : '#f0f9ff'; // 배경색 변경
+            updateTimerDisplay();
+            resetStartBtn();
+        }
+
+        function resetStartBtn() {
+            startBtn.textContent = '시작';
+            startBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+            startBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+        }
+
+        function resetTimer() {
+            // 현재 선택된 기법의 처음으로 리셋
+            setTechnique(currentTechnique);
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        });
+        resetBtn.addEventListener('click', resetTimer);
+        pomodoroBtn.addEventListener('click', () => setTechnique('pomodoro'));
+        ultradianBtn.addEventListener('click', () => setTechnique('ultradian'));
+
+        // --- 기능 2: 스트레칭 가이드 ---
+        document.getElementById('stretch-btn').addEventListener('click', () => {
+            showModal(
+                '자세 교정 스트레칭',
+                '<p class="mb-2">연구에 따르면 잘못된 자세는 집중력을 저하시킵니다. 잠시 1분간 스트레칭을 해보세요.</p>' +
+                '<ul class="list-disc list-inside">' +
+                '<li>목 돌리기 (좌/우 10초)</li>' +
+                '<li>어깨 으쓱하기 (5회)</li>' +
+                '<li>허리 펴고 가슴 열기 (15초)</li>' +
+                '<li>손목 털기 (10초)</li>' +
+                '</ul>'
+            );
+        });
+
+        // --- 기능 3: 동기 부여 ---
+        const quotes = [
+            // 연구 기반
+            "명확한 목표는 전두엽을 활성화하고 도파민 분비를 유도합니다. (뇌과학)",
+            "작은 단위의 성취 경험이 자기효능감을 강화합니다. (심리학)",
+            "스트레스(코르티솔)는 전두엽의 집중 기능을 저하시킵니다. 잠시 쉬어가세요.",
+            "불편한 자세는 집중력 저하의 중요 원인입니다. 자세를 바로 하세요.",
+            "90분 집중, 20분 휴식. 뇌의 '울트라디안 리듬'에 맞춰 효율을 높여보세요.",
+            // 수능 만점자
+            "공부는 '머리'가 아니라 '엉덩이'로 하는 것이다.",
+            "지금 잠을 자면 꿈을 꾸지만, 지금 공부하면 꿈을 이룬다.",
+            "가장 유능한 사람은 가장 배움에 힘쓰는 사람이다. - 괴테",
+            "나는 문제를 풀 때 절대 '못 풀겠다'는 생각을 하지 않는다. (수능 만점자)",
+            "모르는 문제가 나왔을 때가 실력이 오르는 순간이다.",
+            // 일반 명언
+            "오늘 걷지 않으면, 내일은 뛰어야 한다.",
+            "미래는 현재 우리가 무엇을 하는가에 달려 있다. - 간디",
+            "성공의 비결은 '시작'하는 것이다. - 마크 트웨인",
+            "포기하지 않는 한, 실패는 없다.",
+            "가장 큰 위험은 아무 위험도 감수하지 않는 것이다."
+        ];
+        document.getElementById('motivation-btn').addEventListener('click', () => {
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            showModal(
+                '오늘의 동기부여',
+                `<p class="text-center text-xl italic">"${randomQuote}"</p>`
+            );
+        });
+
+        // --- 초기 로드 ---
+        setTechnique('pomodoro'); // 페이지 로드 시 포모도로로 기본 설정
+    </script>
+</body>
+</html>
